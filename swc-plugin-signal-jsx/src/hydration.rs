@@ -11,7 +11,9 @@ use swc_core::{
     quote,
 };
 
-use crate::{binding::Binding, component::Component, node::Node};
+use crate::{
+    binding::Binding, component::Component, import::ImportMap, node::Node,
+};
 
 pub enum Hydration {
     Node(Node),
@@ -19,41 +21,6 @@ pub enum Hydration {
 }
 
 impl Hydration {
-    fn ident() -> Ident {
-        private_ident!("$el")
-    }
-
-    fn el_ident(
-        interval: usize,
-        cursor: Ident,
-        stmts: &mut Vec<Stmt>,
-    ) -> Ident {
-        match interval {
-            0 => cursor,
-            _ => {
-                let el = Self::ident();
-
-                let stmt = if interval == 1 {
-                    quote!(
-                        "const $el = $cursor.nextSibling" as Stmt,
-                        el = el.clone(),
-                        cursor = cursor
-                    )
-                } else {
-                    quote!(
-                        "const $el = toSibling($cursor,$interval)" as Stmt,
-                        el = el.clone(),
-                        cursor = cursor,
-                        interval: Expr = interval.into()
-                    )
-                };
-
-                stmts.push(stmt);
-                el
-            },
-        }
-    }
-
     pub fn parse_jsx(
         mut interval: usize,
         elm: &mut JSXElement,
@@ -90,10 +57,16 @@ impl Hydration {
                     match &mut container.expr {
                         JSXExpr::JSXEmptyExpr(_) => {},
                         JSXExpr::Expr(box signal) => {
-                            node.bindings.push(Binding::Signal {
-                                name: quote_ident!("text"),
-                                signal: signal.take(),
-                            })
+                            let hydration = Hydration::Node(Node {
+                                interval,
+                                bindings: vec![Binding::Signal {
+                                    name: quote_ident!("text"),
+                                    signal: signal.take(),
+                                }],
+                                children: vec![],
+                            });
+
+                            node.children.push(hydration)
                         },
                     }
 
@@ -167,19 +140,60 @@ impl Hydration {
 }
 
 pub trait Patch {
+    fn ident() -> Ident {
+        private_ident!("$el")
+    }
+
+    fn el_ident(
+        im: &mut ImportMap,
+        interval: usize,
+        cursor: Ident,
+        stmts: &mut Vec<Stmt>,
+    ) -> Ident {
+        match interval {
+            0 => cursor,
+            _ => {
+                let el = Self::ident();
+
+                let stmt = if interval == 1 {
+                    quote!(
+                        "const $el = $cursor.nextSibling" as Stmt,
+                        el = el.clone(),
+                        cursor = cursor
+                    )
+                } else {
+                    let to_sibling = im.get("toSibling");
+
+                    quote!(
+                        "const $el = $to_sibling($cursor,$interval)" as Stmt,
+                        el = el.clone(),
+                        to_sibling = to_sibling,
+                        cursor = cursor,
+                        interval: Expr = interval.into()
+                    )
+                };
+
+                stmts.push(stmt);
+                el
+            },
+        }
+    }
+
     fn patch_stmts(
         self,
+        im: &mut ImportMap,
         cursor: Ident,
         stmts: &mut Vec<Stmt>,
         decls: &mut Vec<Stmt>,
     ) -> Ident;
 
-    fn patch_info(self) -> (Vec<Stmt>, ArrowExpr);
+    fn patch(self, im: &mut ImportMap) -> (Vec<Stmt>, ArrowExpr);
 }
 
 impl Patch for Hydration {
     fn patch_stmts(
         self,
+        im: &mut ImportMap,
         cursor: Ident,
         stmts: &mut Vec<Stmt>,
         decls: &mut Vec<Stmt>,
@@ -192,7 +206,7 @@ impl Patch for Hydration {
                     children,
                 } = node;
 
-                let el = Hydration::el_ident(interval, cursor, stmts);
+                let el = Hydration::el_ident(im, interval, cursor, stmts);
 
                 for binding in bindings {
                     stmts.push(binding.stmt(el.clone()))
@@ -210,7 +224,7 @@ impl Patch for Hydration {
                     stmts.push(stmt);
 
                     for child in children {
-                        cursor = child.patch_stmts(cursor, stmts, decls)
+                        cursor = child.patch_stmts(im, cursor, stmts, decls)
                     }
                 }
                 el
@@ -224,7 +238,7 @@ impl Patch for Hydration {
                     props,
                 } = cmpt;
 
-                let el = Hydration::el_ident(interval, cursor, stmts);
+                let el = Hydration::el_ident(im, interval, cursor, stmts);
 
                 let call_expr = Component::call_expr(tag, props);
 
@@ -249,13 +263,13 @@ impl Patch for Hydration {
         }
     }
 
-    fn patch_info(self) -> (Vec<Stmt>, ArrowExpr) {
+    fn patch(self, im: &mut ImportMap) -> (Vec<Stmt>, ArrowExpr) {
         let el = Hydration::ident();
 
         let mut stmts = vec![];
         let mut decls = vec![];
 
-        self.patch_stmts(el.clone(), &mut stmts, &mut decls);
+        self.patch_stmts(im, el.clone(), &mut stmts, &mut decls);
 
         let func = ArrowExpr {
             params: vec![el.into()],

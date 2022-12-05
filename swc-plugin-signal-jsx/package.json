@@ -1,6 +1,6 @@
 {
   "name": "@westhide/swc-plugin-signal-jsx",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "SWC plugin for transforming Signal JSX.",
   "keywords": [
     "swc-plugin",

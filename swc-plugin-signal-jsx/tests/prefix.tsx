@@ -1,1 +1,0 @@
-export const $component = <div>1</div>;

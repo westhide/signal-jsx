@@ -18,12 +18,12 @@ use crate::{
 
 #[derive(Default)]
 pub struct SignalJSX<'a> {
-    pub import_map: ImportMap<'a>,
+    pub im: ImportMap<'a>,
 }
 
 impl<'a> SignalJSX<'a> {
     fn cmpt_ident(&mut self) -> Ident {
-        self.import_map.get("component$")
+        self.im.get("component$")
     }
 }
 
@@ -33,7 +33,7 @@ impl<'a> VisitMut for SignalJSX<'a> {
     fn visit_mut_module(&mut self, module: &mut Module) {
         module.visit_mut_children_with(self);
 
-        self.import_map.gen_import_decl(module)
+        self.im.gen_import_decl(module)
     }
 
     /// JSX entry
@@ -48,7 +48,8 @@ impl<'a> VisitMut for SignalJSX<'a> {
                             todo!("static JSX Template")
                         };
 
-                        let (mut decls, patch_fn) = hydration.patch_info();
+                        let (mut decls, patch_fn) =
+                            hydration.patch(&mut self.im);
 
                         let return_stmt = quote!(
                             "return $cmpt($html,$patch_fn)" as Stmt,
