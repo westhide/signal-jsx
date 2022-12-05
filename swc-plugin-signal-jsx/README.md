@@ -1,0 +1,1 @@
+# SWC-plugin-signal-jsx

@@ -1,0 +1,22 @@
+{
+  "name": "@westhide/swc-plugin-signal-jsx",
+  "version": "0.1.3",
+  "description": "SWC plugin for transforming Signal JSX.",
+  "keywords": [
+    "swc-plugin",
+    "signal-jsx"
+  ],
+  "author": "westhide <mr.westhide@gmail.com>",
+  "license": "MIT",
+  "repository": "westhide/signal-jsx/swc-plugin-signal-jsx",
+  "files": [
+    "swc_plugin_signal_jsx.wasm"
+  ],
+  "main": "swc_plugin_signal_jsx.wasm",
+  "scripts": {
+    "prepack:wasi": "cp target/wasm32-wasi/release/swc_plugin_signal_jsx.wasm .",
+    "prepack:wasm": "cp target/wasm32-unknown-unknown/release/swc_plugin_signal_jsx.wasm .",
+    "build:wasi": "cargo build-wasi",
+    "build:wasm32": "cargo build-wasm32"
+  }
+}

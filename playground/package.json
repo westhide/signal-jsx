@@ -1,0 +1,29 @@
+{
+  "name": "@westhide/signal-jsx-playground",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Signal JSX playground.",
+  "keywords": [
+    "playground",
+    "signal-jsx"
+  ],
+  "author": "westhide <mr.westhide@gmail.com>",
+  "license": "MIT",
+  "repository": "westhide/signal-jsx/playground",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.10",
+    "typescript": "^4.9.3",
+    "vite": "^3.2.4",
+    "vite-plugin-inspect": "^0.7.9"
+  },
+  "dependencies": {
+    "@westhide/swc-plugin-signal-jsx": "^0.1.3",
+    "@westhide/vite-plugin-signal-jsx": "0.1.3"
+  }
+}

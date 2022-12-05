@@ -1,0 +1,6 @@
+[alias]
+build-wasi = "build --target wasm32-wasi --release"
+build-wasm32 = "build --target wasm32-unknown-unknown --release"
+
+[env]
+RUST_LOG = "OFF"

@@ -1,0 +1,33 @@
+{
+  "name": "@westhide/vite-plugin-signal-jsx",
+  "version": "0.1.3",
+  "description": "Vite plugin for transforming Signal JSX.",
+  "keywords": [
+    "vite-plugin",
+    "signal-jsx"
+  ],
+  "author": "westhide <mr.westhide@gmail.com>",
+  "license": "MIT",
+  "repository": "westhide/signal-jsx/vite-plugin-signal-jsx",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/main.js",
+  "types":"dist/main.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.3",
+    "vite": "^3.2.4"
+  },
+  "dependencies": {
+    "@swc/cli": "^0.1.57",
+    "@swc/core": "^1.3.21",
+    "@westhide/swc-plugin-signal-jsx": "0.1.3"
+  },
+  "peerDependencies":{
+    "@westhide/swc-plugin-signal-jsx": "0.1.3"
+  }
+}
