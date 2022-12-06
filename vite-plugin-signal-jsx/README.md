@@ -1,1 +1,1 @@
-# vite-plugin-signal-jsx
+# Vite Plugin for Signal JSX

@@ -1,1 +1,1 @@
-# SWC-plugin-signal-jsx
+# SWC Plugin for Signal JSX
